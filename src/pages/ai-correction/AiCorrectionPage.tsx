@@ -4,6 +4,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { correctReportText } from '../../services/aiCorrectionService';
+import { saveAiCorrection } from '../../repositories/aiCorrectionRepository';
 import { errors } from '../../utils/constants';
 
 type LocationState = {
@@ -28,6 +29,19 @@ export function AiCorrectionPage() {
   }, [backTo, text]);
 
   if (!backTo) return <Navigate to="/home" replace />;
+  const currentBackTo = backTo;
+
+  function adoptCorrection() {
+    saveAiCorrection({
+      correctionId: crypto.randomUUID(),
+      originalText: text ?? '',
+      correctedText: corrected,
+      adoptedText: corrected,
+      adopted: true,
+      createdAt: new Date().toISOString()
+    });
+    navigate(currentBackTo, { state: { correctedText: corrected } });
+  }
 
   return (
     <main className="app-shell">
@@ -46,10 +60,10 @@ export function AiCorrectionPage() {
             <p className="pre-line">{corrected}</p>
           </section>
           <div className="action-bar">
-            <PrimaryButton icon={<Check size={18} />} onClick={() => navigate(backTo, { state: { correctedText: corrected } })}>
+            <PrimaryButton icon={<Check size={18} />} onClick={adoptCorrection}>
               採用
             </PrimaryButton>
-            <PrimaryButton icon={<X size={18} />} variant="secondary" onClick={() => navigate(backTo)}>
+            <PrimaryButton icon={<X size={18} />} variant="secondary" onClick={() => navigate(currentBackTo)}>
               キャンセル
             </PrimaryButton>
           </div>
