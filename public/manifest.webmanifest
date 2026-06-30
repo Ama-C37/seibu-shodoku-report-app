@@ -1,0 +1,9 @@
+{
+  "name": "西武消毒 報告書",
+  "short_name": "報告書",
+  "description": "現場報告書作成支援Webアプリ",
+  "theme_color": "#176b4d",
+  "background_color": "#f7f8f5",
+  "display": "standalone",
+  "start_url": "/"
+}

@@ -3,6 +3,8 @@
 .flutter-plugins
 .flutter-plugins-dependencies
 build/
+dist/
+node_modules/
 ios/Pods/
 ios/.symlinks/
 android/.gradle/
