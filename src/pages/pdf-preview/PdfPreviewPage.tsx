@@ -1,5 +1,5 @@
-import { Download, Share2 } from 'lucide-react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Download, Edit3, Share2 } from 'lucide-react';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { useReportStore } from '../../stores/reportStore';
@@ -9,6 +9,7 @@ import { formatDate } from '../../utils/dateFormatter';
 import { useState } from 'react';
 
 export function PdfPreviewPage() {
+  const navigate = useNavigate();
   const { reportId } = useParams();
   const report = useReportStore((store) => store.reports.find((item) => item.reportId === reportId));
   const [message, setMessage] = useState('');
@@ -72,6 +73,9 @@ export function PdfPreviewPage() {
         ) : null}
       </section>
       <div className="action-bar">
+        <PrimaryButton icon={<Edit3 size={18} />} variant="secondary" onClick={() => navigate(`/report-form/${currentReport.reportId}/edit`)}>
+          入力画面に戻る
+        </PrimaryButton>
         <PrimaryButton icon={<Download size={18} />} onClick={() => downloadReportPdf(currentReport)}>
           PDFダウンロード
         </PrimaryButton>
