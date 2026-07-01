@@ -23,6 +23,7 @@ type LocationState = {
 };
 
 type DraftForm = {
+  reportId: string;
   title: string;
   workDate: string;
   locationName: string;
@@ -36,12 +37,12 @@ type DraftForm = {
   photos: ReportPhoto[];
 };
 
-function draftKey(reportId: string) {
-  return `seibu-report-form-draft-${reportId}`;
+function draftKey(pathname: string) {
+  return `seibu-report-form-draft-${pathname}`;
 }
 
-function loadDraft(reportId: string) {
-  const raw = sessionStorage.getItem(draftKey(reportId));
+function loadDraft(pathname: string) {
+  const raw = sessionStorage.getItem(draftKey(pathname));
   return raw ? (JSON.parse(raw) as DraftForm) : null;
 }
 
@@ -57,10 +58,10 @@ export function ReportFormPage() {
   const existing = reports.find((report) => report.reportId === params.reportId);
   const isEdit = Boolean(params.reportId);
 
-  const initialReportId = useMemo(() => existing?.reportId ?? crypto.randomUUID(), [existing?.reportId]);
+  const draft = useMemo(() => loadDraft(location.pathname), [location.pathname]);
+  const initialReportId = useMemo(() => existing?.reportId ?? draft?.reportId ?? crypto.randomUUID(), [draft?.reportId, existing?.reportId]);
   const reportType = (existing?.reportType ?? params.reportType) as ReportType | undefined;
   const photoType = (existing?.photoType ?? params.photoType) as PhotoType | undefined;
-  const draft = useMemo(() => loadDraft(initialReportId), [initialReportId]);
 
   const [title, setTitle] = useState(draft?.title ?? existing?.title ?? '');
   const [workDate, setWorkDate] = useState(draft?.workDate ?? existing?.workDate ?? todayInputValue());
@@ -131,6 +132,7 @@ export function ReportFormPage() {
 
   function persistDraft() {
     const draftValue: DraftForm = {
+      reportId: initialReportId,
       title,
       workDate,
       locationName,
@@ -143,7 +145,7 @@ export function ReportFormPage() {
       remarks,
       photos
     };
-    sessionStorage.setItem(draftKey(initialReportId), JSON.stringify(draftValue));
+    sessionStorage.setItem(draftKey(location.pathname), JSON.stringify(draftValue));
   }
 
   function validate() {
@@ -164,7 +166,7 @@ export function ReportFormPage() {
   function submit(status: ReportStatus) {
     if (!validate()) return;
     save(buildReport(status));
-    sessionStorage.removeItem(draftKey(initialReportId));
+    sessionStorage.removeItem(draftKey(location.pathname));
     navigate('/home', { replace: true });
   }
 
@@ -173,7 +175,7 @@ export function ReportFormPage() {
     if (!validate()) return;
     const report = buildReport('draft');
     save(report);
-    sessionStorage.removeItem(draftKey(initialReportId));
+    sessionStorage.removeItem(draftKey(location.pathname));
     navigate(`/pdf-preview/${report.reportId}`);
   }
 
