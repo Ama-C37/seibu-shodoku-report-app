@@ -54,8 +54,6 @@ export function PdfPreviewPage() {
             <dd>{currentReport.reporterName}</dd>
             <dt>所属支店</dt>
             <dd>{currentReport.branchName || '未設定'}</dd>
-            <dt>GPS情報</dt>
-            <dd>{currentReport.latitude && currentReport.longitude ? `${currentReport.latitude}, ${currentReport.longitude}` : '未取得'}</dd>
           </dl>
           <h3>報告内容</h3>
           <p className="pre-line">{currentReport.content}</p>

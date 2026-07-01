@@ -6,7 +6,7 @@ import { LoadingOverlay } from '../../components/LoadingOverlay';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import type { PhotoType, Report, ReportStatus, ReportType } from '../../models/report';
 import type { ReportPhoto } from '../../models/reportPhoto';
-import { getCurrentPosition } from '../../services/gpsService';
+import { getCurrentPosition, reverseGeocode } from '../../services/gpsService';
 import { useAuthStore } from '../../stores/authStore';
 import { usePhotoStore } from '../../stores/photoStore';
 import { useReportStore } from '../../stores/reportStore';
@@ -95,6 +95,8 @@ export function ReportFormPage() {
       const position = await getCurrentPosition();
       setLatitude(position.coords.latitude);
       setLongitude(position.coords.longitude);
+      const detectedAddress = await reverseGeocode(position.coords.latitude, position.coords.longitude);
+      setAddress(detectedAddress);
     } catch {
       setMessage(errors.gps);
     } finally {
@@ -206,11 +208,11 @@ export function ReportFormPage() {
           </label>
           <section className="inline-panel">
             <div>
-              <strong>GPS取得位置</strong>
-              <p>{latitude && longitude ? `緯度 ${latitude}\n経度 ${longitude}` : '未取得'}</p>
+              <strong>住所自動入力</strong>
+              <p>{address ? 'GPSから住所を取得済みです' : 'GPSを取得すると住所欄へ自動入力します'}</p>
             </div>
             <PrimaryButton icon={<MapPin size={18} />} variant="secondary" type="button" onClick={acquireGps}>
-              取得
+              GPSから住所取得
             </PrimaryButton>
           </section>
           <label>

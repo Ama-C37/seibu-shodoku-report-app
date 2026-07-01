@@ -27,12 +27,6 @@ export function createReportPdf(report: Report) {
   y = addWrappedText(doc, '住所', report.address, y);
   y = addWrappedText(doc, '報告者', report.reporterName, y);
   y = addWrappedText(doc, '所属支店', report.branchName, y);
-  y = addWrappedText(
-    doc,
-    'GPS情報',
-    report.latitude && report.longitude ? `${report.latitude}, ${report.longitude}` : '未取得',
-    y
-  );
   y = addWrappedText(doc, '報告内容', report.content, y + 4);
   addWrappedText(doc, '備考', report.remarks, y + 4);
 
