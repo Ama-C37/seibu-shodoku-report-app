@@ -4,5 +4,6 @@ export type AiCorrection = {
   correctedText: string;
   adoptedText: string;
   adopted: boolean;
+  retryIndex?: number;
   createdAt: string;
 };

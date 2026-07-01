@@ -14,6 +14,12 @@ export function findAdoptedAiCorrections(limit = 5) {
     .slice(0, limit);
 }
 
+export function findRejectedAiCorrections(originalText: string, limit = 5) {
+  return findAiCorrections()
+    .filter((correction) => !correction.adopted && correction.originalText === originalText)
+    .slice(0, limit);
+}
+
 export function saveAiCorrection(correction: AiCorrection) {
   const corrections = findAiCorrections();
   corrections.unshift(correction);
