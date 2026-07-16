@@ -1,5 +1,6 @@
 import { Trash2 } from 'lucide-react';
 
+import { DriveImage } from './DriveImage';
 import type { ReportPhoto } from '../models/reportPhoto';
 
 type Props = {
@@ -11,7 +12,7 @@ type Props = {
 export function PhotoInputCard({ photo, onDescriptionChange, onDelete }: Props) {
   return (
     <article className="photo-card">
-      <img src={photo.imageUrl} alt={photo.description || '報告書写真'} />
+      <DriveImage driveFileId={photo.driveFileId} fallbackSrc={photo.imageUrl} alt={photo.description || '報告書写真'} />
       <label>
         写真説明
         <input value={photo.description} onChange={(event) => onDescriptionChange(event.target.value)} />

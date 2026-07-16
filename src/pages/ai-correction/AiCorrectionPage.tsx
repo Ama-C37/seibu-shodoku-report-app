@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Check, RefreshCw, X } from 'lucide-react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
+import { HeaderNavButton } from '../../components/HeaderNavButton';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { correctReportText } from '../../services/aiCorrectionService';
 import { findRejectedAiCorrections, saveAiCorrection } from '../../repositories/aiCorrectionRepository';
@@ -23,17 +24,24 @@ export function AiCorrectionPage() {
 
   useEffect(() => {
     if (!backTo) return;
-    correctReportText(text ?? '', retryIndex, findRejectedAiCorrections(text ?? '').map((item) => item.correctedText))
-      .then(setCorrected)
-      .catch(() => setMessage(errors.ai))
-      .finally(() => setLoading(false));
+    async function correct() {
+      try {
+        const rejectedCorrections = await findRejectedAiCorrections(text ?? '');
+        setCorrected(await correctReportText(text ?? '', retryIndex, rejectedCorrections.map((item) => item.correctedText)));
+      } catch {
+        setMessage(errors.ai);
+      } finally {
+        setLoading(false);
+      }
+    }
+    void correct();
   }, [backTo, text, retryIndex]);
 
   if (!backTo) return <Navigate to="/home" replace />;
   const currentBackTo = backTo;
 
-  function adoptCorrection() {
-    saveAiCorrection({
+  async function adoptCorrection() {
+    await saveAiCorrection({
       correctionId: crypto.randomUUID(),
       originalText: text ?? '',
       correctedText: corrected,
@@ -45,8 +53,8 @@ export function AiCorrectionPage() {
     navigate(currentBackTo, { state: { correctedText: corrected } });
   }
 
-  function retryCorrection() {
-    saveAiCorrection({
+  async function retryCorrection() {
+    await saveAiCorrection({
       correctionId: crypto.randomUUID(),
       originalText: text ?? '',
       correctedText: corrected,
@@ -62,8 +70,9 @@ export function AiCorrectionPage() {
 
   return (
     <main className="app-shell">
-      <header className="subpage-header">
+      <header className="subpage-header row-header">
         <h1>AI添削</h1>
+        <HeaderNavButton target="home" />
       </header>
       {message ? <p className="alert">{message}</p> : null}
       {loading ? (

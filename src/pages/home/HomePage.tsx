@@ -1,8 +1,9 @@
-import { FilePlus2, FolderOpen, Settings, SquareCheckBig } from 'lucide-react';
+import { FilePlus2, FolderOpen, Settings, ShieldCheck, SquareCheckBig } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { appName } from '../../utils/constants';
 import { useAuthStore } from '../../stores/authStore';
+import { HeaderNavButton } from '../../components/HeaderNavButton';
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -10,11 +11,12 @@ export function HomePage() {
 
   return (
     <main className="app-shell">
-      <header className="topbar">
+      <header className="topbar row-header">
         <div>
           <p className="eyebrow">現場報告書作成支援</p>
           <h1>{appName}</h1>
         </div>
+        <HeaderNavButton target="login" />
       </header>
       <section className="user-summary">
         <strong>{user?.name ?? '未ログイン'}</strong>
@@ -37,6 +39,12 @@ export function HomePage() {
           <Settings />
           設定
         </button>
+        {user?.role === 'admin' ? (
+          <button onClick={() => navigate('/admin')}>
+            <ShieldCheck />
+            管理者ページ
+          </button>
+        ) : null}
       </nav>
     </main>
   );

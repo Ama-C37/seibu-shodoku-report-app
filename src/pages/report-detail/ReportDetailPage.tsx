@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { Edit3, FileText } from 'lucide-react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
+import { HeaderNavButton } from '../../components/HeaderNavButton';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { useReportStore } from '../../stores/reportStore';
 import { formatDate } from '../../utils/dateFormatter';
@@ -10,13 +12,29 @@ export function ReportDetailPage() {
   const navigate = useNavigate();
   const { reportId } = useParams();
   const report = useReportStore((state) => state.reports.find((item) => item.reportId === reportId));
+  const isLoading = useReportStore((state) => state.isLoading);
+  const hasLoaded = useReportStore((state) => state.hasLoaded);
+  const refresh = useReportStore((state) => state.refresh);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  if (isLoading || !hasLoaded) {
+    return (
+      <main className="app-shell">
+        <p className="empty-text">読み込み中...</p>
+      </main>
+    );
+  }
 
   if (!report) return <Navigate to="/home" replace />;
 
   return (
     <main className="app-shell">
-      <header className="subpage-header">
+      <header className="subpage-header row-header">
         <h1>報告書詳細</h1>
+        <HeaderNavButton target="home" />
       </header>
       <section className="detail-panel">
         <h2>{report.title}</h2>

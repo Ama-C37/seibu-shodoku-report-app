@@ -1,7 +1,7 @@
 import { findAdoptedAiCorrections } from '../repositories/aiCorrectionRepository';
 
-function buildAdoptedStyleNotes() {
-  const examples = findAdoptedAiCorrections(3);
+async function buildAdoptedStyleNotes() {
+  const examples = await findAdoptedAiCorrections(3);
   if (examples.length === 0) {
     return [
       'お客様に提出する丁寧な文体にする',
@@ -38,7 +38,9 @@ function retryInstruction(retryIndex: number) {
   return 'これまでの案とは異なる文章構成・語尾・注意喚起文を使って再添削してください。';
 }
 
-export function buildAiCorrectionPrompt(text: string, retryIndex = 0, rejectedTexts: string[] = []) {
+export async function buildAiCorrectionPrompt(text: string, retryIndex = 0, rejectedTexts: string[] = []) {
+  const adoptedStyleNotes = await buildAdoptedStyleNotes();
+
   return `あなたは害虫害獣駆除の現場施工報告書の作成を支援するアシスタントです。
 以下の文章を、お客様に提出する現場施工報告書として自然で丁寧な日本語に添削してください。
 事実を追加せず、意味を変えず、簡潔で分かりやすい表現にしてください。
@@ -49,7 +51,7 @@ export function buildAiCorrectionPrompt(text: string, retryIndex = 0, rejectedTe
 ${styleRules.map((rule) => `- ${rule}`).join('\n')}
 
 過去の採用傾向:
-${buildAdoptedStyleNotes().map((note) => `- ${note}`).join('\n')}
+${adoptedStyleNotes.map((note) => `- ${note}`).join('\n')}
 
 ${retryIndex > 0 ? `再添削条件:\n- ${retryInstruction(retryIndex)}` : ''}
 ${rejectedTexts.length > 0 ? `避ける添削案:\n${rejectedTexts.map((item) => `- ${item.slice(0, 120)}`).join('\n')}` : ''}
@@ -59,6 +61,7 @@ ${text}`;
 }
 
 export async function correctReportText(text: string, retryIndex = 0, rejectedTexts: string[] = []) {
+  await buildAiCorrectionPrompt(text, retryIndex, rejectedTexts);
   await new Promise((resolve) => window.setTimeout(resolve, 500));
 
   const normalized = text.trim().replace(/\n{3,}/g, '\n\n');

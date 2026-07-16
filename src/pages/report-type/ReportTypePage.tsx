@@ -1,13 +1,16 @@
 import { ClipboardList, Hammer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import { HeaderNavButton } from '../../components/HeaderNavButton';
+
 export function ReportTypePage() {
   const navigate = useNavigate();
 
   return (
     <main className="app-shell">
-      <header className="subpage-header">
+      <header className="subpage-header row-header">
         <h1>報告書種別</h1>
+        <HeaderNavButton target="home" />
       </header>
       <div className="choice-list">
         <button onClick={() => navigate('/photo-type/investigation')}>

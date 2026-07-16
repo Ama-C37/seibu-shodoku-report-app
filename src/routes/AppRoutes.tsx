@@ -12,6 +12,7 @@ import { ReportListPage } from '../pages/report-list/ReportListPage';
 import { ReportTypePage } from '../pages/report-type/ReportTypePage';
 import { SettingsPage } from '../pages/settings/SettingsPage';
 import { SplashPage } from '../pages/splash/SplashPage';
+import { AdminRoutes } from './AdminRoutes';
 
 export function AppRoutes() {
   return (
@@ -29,6 +30,7 @@ export function AppRoutes() {
       <Route path="/report-list/:status" element={<ReportListPage />} />
       <Route path="/report-detail/:reportId" element={<ReportDetailPage />} />
       <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/admin/*" element={<AdminRoutes />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

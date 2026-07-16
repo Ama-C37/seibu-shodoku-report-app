@@ -5,17 +5,26 @@ import * as authRepository from '../repositories/authRepository';
 
 type AuthState = {
   user: AppUser | null;
-  signIn: (email: string, password: string) => void;
+  signIn: (email: string, password: string) => Promise<AppUser>;
   continueAsGuest: () => void;
-  signOut: () => void;
+  updateCurrentUser: (user: AppUser) => void;
+  signOut: () => Promise<void>;
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: authRepository.loadCurrentUser(),
-  signIn: (email) => set({ user: authRepository.signIn(email) }),
+  signIn: async (email, password) => {
+    const user = await authRepository.signIn(email, password);
+    set({ user });
+    return user;
+  },
   continueAsGuest: () => set({ user: authRepository.continueAsGuest() }),
-  signOut: () => {
-    authRepository.signOut();
+  updateCurrentUser: (user) => {
+    authRepository.updateCurrentUser(user);
+    set({ user: authRepository.loadCurrentUser() });
+  },
+  signOut: async () => {
+    await authRepository.signOut();
     set({ user: null });
   }
 }));

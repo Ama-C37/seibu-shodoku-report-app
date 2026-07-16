@@ -3,6 +3,11 @@ export type ReportPhoto = {
   reportId: string;
   imageUrl: string;
   thumbnailUrl?: string;
+  driveFileId?: string;
+  driveWebViewLink?: string;
+  driveThumbnailLink?: string;
+  driveMimeType?: string;
+  driveName?: string;
   description: string;
   sortOrder: number;
   takenAt?: string;

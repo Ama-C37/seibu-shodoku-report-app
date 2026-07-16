@@ -1,6 +1,7 @@
 import { Camera, FileText } from 'lucide-react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
+import { HeaderNavButton } from '../../components/HeaderNavButton';
 import type { ReportType } from '../../models/report';
 
 const reportTypes = ['investigation', 'construction'];
@@ -13,8 +14,9 @@ export function PhotoTypePage() {
 
   return (
     <main className="app-shell">
-      <header className="subpage-header">
+      <header className="subpage-header row-header">
         <h1>写真有無</h1>
+        <HeaderNavButton target="home" />
       </header>
       <div className="choice-list">
         <button onClick={() => navigate(`/report-form/${reportType as ReportType}/with_photo`)}>
