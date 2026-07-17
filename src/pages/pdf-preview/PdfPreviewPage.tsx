@@ -36,8 +36,23 @@ function copyTypeLabel(value?: string) {
 }
 
 function getSummaryCompactClassName(textLength: number) {
-  const compactCount = Math.max(0, Math.ceil((textLength - summaryCompactThreshold) / 50));
-  return compactClasses.slice(0, compactCount).join(' ');
+  if (textLength <= summaryCompactThreshold) return '';
+
+  const classNames: Array<(typeof compactClasses)[number]> = [
+    'compact-activity',
+    'compact-treatment',
+    'compact-meta'
+  ];
+
+  if (textLength > 550) {
+    classNames.push('compact-activity-tight', 'compact-treatment-tight', 'compact-meta-tight');
+  }
+
+  if (textLength > 650) {
+    classNames.push('compact-page');
+  }
+
+  return classNames.join(' ');
 }
 
 export function PdfPreviewPage() {
@@ -91,7 +106,7 @@ export function PdfPreviewPage() {
 
     frameId = window.requestAnimationFrame(() => {
       const minimumCompactCount = Math.max(0, Math.ceil((summaryTextLength - summaryCompactThreshold) / 50));
-      const minimumCompactClasses = compactClasses.slice(0, minimumCompactCount);
+      const minimumCompactClasses = summaryCompactClassName.split(' ').filter(Boolean);
       pageElement.classList.remove(...compactClasses.filter((className) => !minimumCompactClasses.includes(className)));
       for (const [index, className] of compactClasses.entries()) {
         if (index >= minimumCompactCount && pageFits()) break;
