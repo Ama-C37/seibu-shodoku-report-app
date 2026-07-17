@@ -12,7 +12,7 @@ import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 const photosPerPage = 6;
 const pdfPageWidth = 794;
-const compactClasses = ['compact-treatment', 'compact-activity', 'compact-meta', 'compact-page'] as const;
+const compactClasses = ['compact-activity', 'compact-treatment', 'compact-meta', 'compact-page'] as const;
 
 function chunkPhotos<T>(items: T[], size: number) {
   return Array.from({ length: Math.ceil(items.length / size) }, (_, index) => items.slice(index * size, index * size + size));
