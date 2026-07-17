@@ -1506,8 +1506,8 @@ textarea {
 }
 
 .pdf-management-page.compact-meta-tight .management-fixed-area {
-  flex-basis: 372px;
-  height: 372px;
+  flex-basis: 350px;
+  height: 350px;
 }
 
 .pdf-management-page.compact-meta.reference-management-page .management-meta-table th,
@@ -1516,16 +1516,16 @@ textarea {
 }
 
 .pdf-management-page.compact-meta-tight.reference-management-page .management-meta-table {
-  top: 300px;
+  top: 280px;
 }
 
 .pdf-management-page.compact-meta-tight.reference-management-page .management-meta-table th,
 .pdf-management-page.compact-meta-tight.reference-management-page .management-meta-table td {
-  height: 24px;
+  height: 22px;
 }
 
 .pdf-management-page.compact-meta-tight .management-intro {
-  top: 250px;
+  top: 238px;
 }
 
 .pdf-management-page.compact-meta .management-top-grid {

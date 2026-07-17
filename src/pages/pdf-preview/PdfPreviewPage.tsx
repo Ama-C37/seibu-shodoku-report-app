@@ -70,8 +70,11 @@ export function PdfPreviewPage() {
 
     function pageFits() {
       const summary = pageElement.querySelector<HTMLElement>('.management-summary');
+      const summaryText = summary?.querySelector<HTMLElement>('p');
       const pageOverflow = pageElement.scrollHeight - pageElement.clientHeight;
-      const summaryOverflow = summary ? summary.scrollHeight - summary.clientHeight : 0;
+      const summaryOverflow = summary && summaryText
+        ? summaryText.getBoundingClientRect().bottom - summary.getBoundingClientRect().bottom
+        : 0;
       return (
         pageOverflow <= 1 &&
         summaryOverflow <= 1
