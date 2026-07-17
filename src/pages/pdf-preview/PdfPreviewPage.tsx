@@ -35,6 +35,11 @@ function copyTypeLabel(value?: string) {
   return value === 'company' ? '会社控' : '御客様控';
 }
 
+function getSummaryCompactClassName(textLength: number) {
+  const compactCount = Math.max(0, Math.ceil((textLength - summaryCompactThreshold) / 50));
+  return compactClasses.slice(0, compactCount).join(' ');
+}
+
 export function PdfPreviewPage() {
   const navigate = useNavigate();
   const { reportId } = useParams();
@@ -47,6 +52,7 @@ export function PdfPreviewPage() {
   const [previewScale, setPreviewScale] = useState(1);
   const previewRef = useRef<HTMLElement | null>(null);
   const summaryTextLength = (report?.constructionNoPhoto?.workSummary || report?.content || '').trim().length;
+  const summaryCompactClassName = getSummaryCompactClassName(summaryTextLength);
 
   useEffect(() => {
     void refresh();
@@ -85,7 +91,8 @@ export function PdfPreviewPage() {
 
     frameId = window.requestAnimationFrame(() => {
       const minimumCompactCount = Math.max(0, Math.ceil((summaryTextLength - summaryCompactThreshold) / 50));
-      pageElement.classList.remove(...compactClasses);
+      const minimumCompactClasses = compactClasses.slice(0, minimumCompactCount);
+      pageElement.classList.remove(...compactClasses.filter((className) => !minimumCompactClasses.includes(className)));
       for (const [index, className] of compactClasses.entries()) {
         if (index >= minimumCompactCount && pageFits()) break;
         pageElement.classList.add(className);
@@ -93,7 +100,7 @@ export function PdfPreviewPage() {
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [report?.reportId, report?.content, report?.constructionNoPhoto, summaryTextLength, isLoading, hasLoaded]);
+  }, [report?.reportId, report?.content, report?.constructionNoPhoto, summaryCompactClassName, summaryTextLength, isLoading, hasLoaded]);
 
   if (isLoading || !hasLoaded) {
     return (
@@ -199,7 +206,7 @@ export function PdfPreviewPage() {
       {creating ? <p className="hint">PDFを作成しています。</p> : null}
       <section className="pdf-preview" ref={previewRef}>
         {isConstructionNoPhotoTemplate && constructionNoPhoto ? (
-          renderPdfPage(<div className="pdf-page pdf-management-page reference-management-page">
+          renderPdfPage(<div className={`pdf-page pdf-management-page reference-management-page ${summaryCompactClassName}`.trim()}>
             <div className="management-fixed-area">
               <div className="management-legal-note">「ビル管理法」・「食品衛生法」・「労働安全衛生法」に定められる備付帳簿用</div>
               <div className="management-title-row">
