@@ -21,6 +21,7 @@ const compactClasses = [
   'compact-meta-tight',
   'compact-page'
 ] as const;
+const summaryCompactThreshold = 450;
 
 function chunkPhotos<T>(items: T[], size: number) {
   return Array.from({ length: Math.ceil(items.length / size) }, (_, index) => items.slice(index * size, index * size + size));
@@ -45,6 +46,7 @@ export function PdfPreviewPage() {
   const [creating, setCreating] = useState(false);
   const [previewScale, setPreviewScale] = useState(1);
   const previewRef = useRef<HTMLElement | null>(null);
+  const summaryTextLength = (report?.constructionNoPhoto?.workSummary || report?.content || '').trim().length;
 
   useEffect(() => {
     void refresh();
@@ -82,15 +84,16 @@ export function PdfPreviewPage() {
     }
 
     frameId = window.requestAnimationFrame(() => {
+      const minimumCompactCount = Math.max(0, Math.ceil((summaryTextLength - summaryCompactThreshold) / 50));
       pageElement.classList.remove(...compactClasses);
-      for (const className of compactClasses) {
-        if (pageFits()) break;
+      for (const [index, className] of compactClasses.entries()) {
+        if (index >= minimumCompactCount && pageFits()) break;
         pageElement.classList.add(className);
       }
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [report?.reportId, report?.content, report?.constructionNoPhoto, isLoading, hasLoaded]);
+  }, [report?.reportId, report?.content, report?.constructionNoPhoto, summaryTextLength, isLoading, hasLoaded]);
 
   if (isLoading || !hasLoaded) {
     return (
