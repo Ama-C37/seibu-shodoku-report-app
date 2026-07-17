@@ -12,7 +12,15 @@ import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 const photosPerPage = 6;
 const pdfPageWidth = 794;
-const compactClasses = ['compact-activity', 'compact-treatment', 'compact-meta', 'compact-page'] as const;
+const compactClasses = [
+  'compact-activity',
+  'compact-activity-tight',
+  'compact-treatment',
+  'compact-treatment-tight',
+  'compact-meta',
+  'compact-meta-tight',
+  'compact-page'
+] as const;
 
 function chunkPhotos<T>(items: T[], size: number) {
   return Array.from({ length: Math.ceil(items.length / size) }, (_, index) => items.slice(index * size, index * size + size));
@@ -58,20 +66,27 @@ export function PdfPreviewPage() {
     const page = previewRef.current?.querySelector<HTMLElement>('.pdf-management-page');
     if (!page) return;
     const pageElement = page;
+    let frameId = 0;
 
     function pageFits() {
       const summary = pageElement.querySelector<HTMLElement>('.management-summary');
+      const pageOverflow = pageElement.scrollHeight - pageElement.clientHeight;
+      const summaryOverflow = summary ? summary.scrollHeight - summary.clientHeight : 0;
       return (
-        pageElement.scrollHeight <= pageElement.clientHeight &&
-        (!summary || summary.scrollHeight <= summary.clientHeight)
+        pageOverflow <= 1 &&
+        summaryOverflow <= 1
       );
     }
 
-    pageElement.classList.remove(...compactClasses);
-    for (const className of compactClasses) {
-      if (pageFits()) break;
-      pageElement.classList.add(className);
-    }
+    frameId = window.requestAnimationFrame(() => {
+      pageElement.classList.remove(...compactClasses);
+      for (const className of compactClasses) {
+        if (pageFits()) break;
+        pageElement.classList.add(className);
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
   }, [report?.reportId, report?.content, report?.constructionNoPhoto, isLoading, hasLoaded]);
 
   if (isLoading || !hasLoaded) {

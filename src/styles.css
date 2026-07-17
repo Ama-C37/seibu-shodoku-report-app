@@ -1449,9 +1449,30 @@ textarea {
   height: 30px;
 }
 
+.pdf-management-page.compact-treatment-tight .management-table {
+  font-size: 0.78rem;
+}
+
+.pdf-management-page.compact-treatment-tight .management-table th,
+.pdf-management-page.compact-treatment-tight .management-table td {
+  padding: 3px 5px;
+  line-height: 1.18;
+}
+
+.pdf-management-page.compact-treatment-tight .management-treatment-table th,
+.pdf-management-page.compact-treatment-tight .management-treatment-table td {
+  height: 24px;
+}
+
 .pdf-management-page.compact-treatment .management-section-title {
   margin-top: 2px;
   padding: 5px 9px;
+}
+
+.pdf-management-page.compact-treatment-tight .management-section-title {
+  margin-top: 0;
+  padding: 3px 8px;
+  font-size: 20px;
 }
 
 .pdf-management-page.compact-activity .management-activity-table th,
@@ -1459,6 +1480,13 @@ textarea {
   height: 28px;
   padding: 4px 6px;
   line-height: 1.2;
+}
+
+.pdf-management-page.compact-activity-tight .management-activity-table th,
+.pdf-management-page.compact-activity-tight .management-activity-table td {
+  height: 22px;
+  padding: 2px 5px;
+  line-height: 1.1;
 }
 
 .pdf-management-page.compact-activity .management-activity-table th:not(:first-child),
@@ -1477,9 +1505,27 @@ textarea {
   height: 398px;
 }
 
+.pdf-management-page.compact-meta-tight .management-fixed-area {
+  flex-basis: 372px;
+  height: 372px;
+}
+
 .pdf-management-page.compact-meta.reference-management-page .management-meta-table th,
 .pdf-management-page.compact-meta.reference-management-page .management-meta-table td {
   height: 28px;
+}
+
+.pdf-management-page.compact-meta-tight.reference-management-page .management-meta-table {
+  top: 300px;
+}
+
+.pdf-management-page.compact-meta-tight.reference-management-page .management-meta-table th,
+.pdf-management-page.compact-meta-tight.reference-management-page .management-meta-table td {
+  height: 24px;
+}
+
+.pdf-management-page.compact-meta-tight .management-intro {
+  top: 250px;
 }
 
 .pdf-management-page.compact-meta .management-top-grid {
