@@ -734,6 +734,305 @@ textarea {
   box-shadow: 0 10px 28px rgba(31, 42, 36, 0.08);
 }
 
+.pdf-variant-label {
+  width: 794px;
+  margin: 8px auto -8px;
+  color: #66736b;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.excel-report-page {
+  padding: 34px 38px;
+  color: #000000;
+  font-family: 'Yu Gothic', 'YuGothic', 'Meiryo', sans-serif;
+  overflow: hidden;
+}
+
+.excel-grid {
+  display: grid;
+  grid-template-columns:
+    2.88fr 1.88fr 0.75fr 0.75fr 0.75fr 5.88fr 1.88fr 0.75fr 0.75fr 0.75fr
+    1.25fr 1.13fr 3.25fr 1.88fr 0.75fr 0.75fr 0.75fr 1.13fr 2.63fr 2.88fr
+    2fr 1.88fr 0.75fr 1.5fr 3.75fr 4.5fr 1.88fr 0.75fr 0.75fr 0.75fr
+    3fr 2.13fr 1.5fr 2fr 1.88fr 0.75fr 2.13fr 1.13fr 1.88fr 1.13fr 3fr;
+  grid-template-rows:
+    13px 19px 23px 11px 20px 17px 10px 19px 18px 13px 28px
+    9px 13px 14px 26px 26px 25px 21px 24px 24px 24px 24px 24px
+    24px 24px 24px 24px 24px 24px 24px 19px 17px;
+  width: 100%;
+  height: 1048px;
+  align-content: start;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.excel-cell {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  align-items: center;
+  padding: 2px 5px;
+  border: 1px solid #000000;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.excel-note {
+  grid-column: 1 / 41;
+  grid-row: 1 / 2;
+  justify-content: center;
+  border: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.excel-title {
+  grid-column: 7 / 32;
+  grid-row: 3 / 4;
+  justify-content: center;
+  align-items: end;
+  border: 0;
+  border-bottom: 2px solid #000000;
+  padding-bottom: 0;
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.excel-copy {
+  grid-column: 33 / 38;
+  grid-row: 3 / 4;
+  justify-content: center;
+  border: 0;
+  font-weight: 700;
+}
+
+.excel-addressee {
+  grid-column: 1 / 16;
+  grid-row: 5 / 7;
+  align-items: end;
+  border: 0;
+  border-bottom: 2px solid #000000;
+  padding: 0 8px 4px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.excel-honorific {
+  grid-column: 16 / 20;
+  grid-row: 6 / 7;
+  justify-content: center;
+  border: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.excel-label {
+  justify-content: center;
+  font-weight: 700;
+}
+
+.excel-value {
+  font-weight: 500;
+}
+
+.excel-manager-label {
+  grid-column: 1 / 6;
+  grid-row: 8 / 9;
+}
+
+.excel-manager-value {
+  grid-column: 6 / 14;
+  grid-row: 8 / 9;
+}
+
+.excel-worker-label {
+  grid-column: 1 / 6;
+  grid-row: 9 / 10;
+}
+
+.excel-worker-value {
+  grid-column: 6 / 14;
+  grid-row: 9 / 10;
+}
+
+.excel-staff-label {
+  grid-column: 1 / 6;
+  grid-row: 10 / 12;
+}
+
+.excel-staff-value {
+  grid-column: 6 / 14;
+  grid-row: 10 / 12;
+}
+
+.excel-intro {
+  grid-column: 1 / 42;
+  grid-row: 13 / 14;
+  border: 0;
+  padding: 0;
+  font-size: 14px;
+}
+
+.excel-date-label {
+  grid-column: 1 / 11;
+  grid-row: 15 / 16;
+}
+
+.excel-date-value {
+  grid-column: 11 / 26;
+  grid-row: 15 / 16;
+}
+
+.excel-time-label {
+  grid-column: 27 / 32;
+  grid-row: 15 / 16;
+}
+
+.excel-time-value {
+  grid-column: 32 / 37;
+  grid-row: 15 / 16;
+  justify-content: center;
+}
+
+.excel-wave {
+  grid-column: 37 / 39;
+  grid-row: 15 / 16;
+  justify-content: center;
+  border-left: 0;
+  border-right: 0;
+}
+
+.excel-time-end {
+  grid-column: 39 / 42;
+  grid-row: 15 / 16;
+  justify-content: center;
+}
+
+.excel-place-label {
+  grid-column: 1 / 11;
+  grid-row: 16 / 17;
+}
+
+.excel-place-value {
+  grid-column: 11 / 42;
+  grid-row: 16 / 17;
+}
+
+.excel-section {
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.excel-treatment-title {
+  grid-column: 1 / 42;
+  grid-row: 17 / 18;
+}
+
+.excel-head {
+  justify-content: center;
+  text-align: center;
+  font-weight: 700;
+}
+
+.excel-pest-head {
+  grid-column: 1 / 8;
+  grid-row: 18 / 19;
+}
+
+.excel-chemical-head {
+  grid-column: 8 / 17;
+  grid-row: 18 / 19;
+}
+
+.excel-method-head {
+  grid-column: 17 / 23;
+  grid-row: 18 / 19;
+}
+
+.excel-amount-head {
+  grid-column: 23 / 30;
+  grid-row: 18 / 19;
+}
+
+.excel-notes-head {
+  grid-column: 30 / 42;
+  grid-row: 18 / 19;
+}
+
+.excel-treatment-row {
+  display: contents;
+}
+
+.excel-row-pest {
+  grid-column: 1 / 8;
+}
+
+.excel-row-chemical {
+  grid-column: 8 / 17;
+}
+
+.excel-row-method {
+  grid-column: 17 / 23;
+}
+
+.excel-row-amount {
+  grid-column: 23 / 30;
+}
+
+.excel-row-notes {
+  grid-column: 30 / 42;
+}
+
+.excel-summary {
+  grid-column: 1 / 42;
+  grid-row: 25 / 29;
+  align-items: start;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.excel-summary p {
+  margin: 0;
+  line-height: 1.38;
+}
+
+.excel-activity-title {
+  grid-column: 1 / 42;
+  grid-row: 29 / 30;
+}
+
+.excel-activity-pest {
+  grid-row: 30 / 31;
+}
+
+.excel-activity-level {
+  grid-row: 31 / 32;
+  justify-content: center;
+}
+
+.excel-footer-text {
+  grid-column: 2 / 24;
+  grid-row: 32 / 34;
+  align-self: center;
+  padding-left: 4px;
+  font-weight: 700;
+}
+
+.excel-effect-label {
+  grid-column: 25 / 30;
+  grid-row: 32 / 34;
+}
+
+.excel-effect-value {
+  grid-column: 30 / 42;
+  grid-row: 32 / 34;
+  justify-content: center;
+}
+
 .pdf-cover-page {
   display: flex;
   flex-direction: column;
