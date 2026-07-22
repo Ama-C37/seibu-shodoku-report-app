@@ -742,6 +742,17 @@ textarea {
   font-weight: 700;
 }
 
+.pdf-top-action-bar {
+  position: sticky;
+  top: 8px;
+  z-index: 20;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #d9e0d8;
+  border-radius: 8px;
+  background: rgba(247, 248, 245, 0.96);
+}
+
 .excel-report-page {
   padding: 34px 38px;
   color: #000000;

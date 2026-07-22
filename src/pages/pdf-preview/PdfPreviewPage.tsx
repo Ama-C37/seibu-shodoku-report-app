@@ -131,6 +131,7 @@ export function PdfPreviewPage() {
   const usesImages = currentReport.photoType === 'with_photo';
   const isConstructionNoPhotoTemplate = currentReport.reportType === 'construction' && currentReport.photoType === 'without_photo';
   const constructionNoPhoto = currentReport.constructionNoPhoto;
+  const hasPdfVariants = Boolean(constructionNoPhoto);
   const treatmentRows = constructionNoPhoto?.treatmentRows?.length
     ? constructionNoPhoto.treatmentRows
     : constructionNoPhoto
@@ -226,7 +227,7 @@ export function PdfPreviewPage() {
         <PrimaryButton icon={<Edit3 size={18} />} variant="secondary" onClick={() => navigate(`/report-form/${currentReport.reportId}/edit`)}>
           入力画面に戻る
         </PrimaryButton>
-        {isConstructionNoPhotoTemplate ? (
+        {hasPdfVariants ? (
           <>
             <PrimaryButton icon={<Download size={18} />} onClick={() => downloadPdf('pdf1')} disabled={creating}>
               PDF1ダウンロード
@@ -264,7 +265,7 @@ export function PdfPreviewPage() {
         {renderPdfActions()}
       </div>
       <section className="pdf-preview" ref={previewRef}>
-        {isConstructionNoPhotoTemplate && constructionNoPhoto ? (
+        {hasPdfVariants && constructionNoPhoto ? (
           <>
             <div className="pdf-variant-label">PDF1</div>
             {renderPdfPage(<div className={`pdf-page pdf-management-page reference-management-page ${summaryCompactClassName}`.trim()} data-pdf-variant="pdf1">
