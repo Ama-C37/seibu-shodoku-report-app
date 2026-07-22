@@ -220,6 +220,38 @@ export function PdfPreviewPage() {
     }
   }
 
+  function renderPdfActions() {
+    return (
+      <>
+        <PrimaryButton icon={<Edit3 size={18} />} variant="secondary" onClick={() => navigate(`/report-form/${currentReport.reportId}/edit`)}>
+          入力画面に戻る
+        </PrimaryButton>
+        {isConstructionNoPhotoTemplate ? (
+          <>
+            <PrimaryButton icon={<Download size={18} />} onClick={() => downloadPdf('pdf1')} disabled={creating}>
+              PDF1ダウンロード
+            </PrimaryButton>
+            <PrimaryButton icon={<Download size={18} />} onClick={() => downloadPdf('pdf2')} disabled={creating}>
+              PDF2ダウンロード
+            </PrimaryButton>
+            <PrimaryButton icon={<Share2 size={18} />} variant="secondary" onClick={() => sharePdf('pdf2')} disabled={creating}>
+              PDF2共有
+            </PrimaryButton>
+          </>
+        ) : (
+          <>
+            <PrimaryButton icon={<Download size={18} />} onClick={() => downloadPdf()} disabled={creating}>
+              PDFダウンロード
+            </PrimaryButton>
+            <PrimaryButton icon={<Share2 size={18} />} variant="secondary" onClick={() => sharePdf()} disabled={creating}>
+              共有
+            </PrimaryButton>
+          </>
+        )}
+      </>
+    );
+  }
+
   return (
     <main className="app-shell">
       <header className="subpage-header row-header">
@@ -228,6 +260,9 @@ export function PdfPreviewPage() {
       </header>
       {message ? <p className="alert">{message}</p> : null}
       {creating ? <p className="hint">PDFを作成しています。</p> : null}
+      <div className="action-bar pdf-top-action-bar">
+        {renderPdfActions()}
+      </div>
       <section className="pdf-preview" ref={previewRef}>
         {isConstructionNoPhotoTemplate && constructionNoPhoto ? (
           <>
@@ -471,31 +506,7 @@ export function PdfPreviewPage() {
         )}
       </section>
       <div className="action-bar">
-        <PrimaryButton icon={<Edit3 size={18} />} variant="secondary" onClick={() => navigate(`/report-form/${currentReport.reportId}/edit`)}>
-          入力画面に戻る
-        </PrimaryButton>
-        {isConstructionNoPhotoTemplate ? (
-          <>
-            <PrimaryButton icon={<Download size={18} />} onClick={() => downloadPdf('pdf1')} disabled={creating}>
-              PDF1ダウンロード
-            </PrimaryButton>
-            <PrimaryButton icon={<Download size={18} />} onClick={() => downloadPdf('pdf2')} disabled={creating}>
-              PDF2ダウンロード
-            </PrimaryButton>
-            <PrimaryButton icon={<Share2 size={18} />} variant="secondary" onClick={() => sharePdf('pdf2')} disabled={creating}>
-              PDF2共有
-            </PrimaryButton>
-          </>
-        ) : (
-          <>
-            <PrimaryButton icon={<Download size={18} />} onClick={() => downloadPdf()} disabled={creating}>
-              PDFダウンロード
-            </PrimaryButton>
-            <PrimaryButton icon={<Share2 size={18} />} variant="secondary" onClick={() => sharePdf()} disabled={creating}>
-              共有
-            </PrimaryButton>
-          </>
-        )}
+        {renderPdfActions()}
       </div>
     </main>
   );
