@@ -131,7 +131,6 @@ export function PdfPreviewPage() {
   const usesImages = currentReport.photoType === 'with_photo';
   const isConstructionNoPhotoTemplate = currentReport.reportType === 'construction' && currentReport.photoType === 'without_photo';
   const constructionNoPhoto = currentReport.constructionNoPhoto;
-  const hasPdfVariants = Boolean(constructionNoPhoto);
   const treatmentRows = constructionNoPhoto?.treatmentRows?.length
     ? constructionNoPhoto.treatmentRows
     : constructionNoPhoto
@@ -154,18 +153,9 @@ export function PdfPreviewPage() {
     : [];
   const fileName = `${currentReport.title || 'report'}.pdf`;
   const reportLocation = currentReport.address || currentReport.locationName || '未入力';
-  const excelTreatmentRows = Array.from({ length: 6 }, (_, index) => treatmentRows[index] ?? {
-    rowId: `excel-empty-${index}`,
-    pestName: '',
-    chemicalName: '',
-    treatmentMethodName: '',
-    chemicalAmount: '',
-    notes: ''
-  });
 
-  function getPreviewPages(variant?: 'pdf1' | 'pdf2') {
-    const selector = variant ? `.pdf-page[data-pdf-variant="${variant}"]` : '.pdf-page';
-    return Array.from(previewRef.current?.querySelectorAll<HTMLElement>(selector) ?? []);
+  function getPreviewPages() {
+    return Array.from(previewRef.current?.querySelectorAll<HTMLElement>('.pdf-page') ?? []);
   }
 
   function renderPdfPage(content: ReactNode, key?: string) {
@@ -190,17 +180,17 @@ export function PdfPreviewPage() {
     );
   }
 
-  async function sharePdf(variant?: 'pdf1' | 'pdf2') {
+  async function sharePdf() {
     setMessage('');
     setCreating(true);
     try {
-      const pages = getPreviewPages(variant);
+      const pages = getPreviewPages();
       const blob = await getPdfPagesBlob(pages);
-      const file = new File([blob], variant ? `${currentReport.title || 'report'}-${variant}.pdf` : fileName, { type: 'application/pdf' });
+      const file = new File([blob], fileName, { type: 'application/pdf' });
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: currentReport.title });
       } else {
-        await downloadPdfPages(pages, file.name);
+        await downloadPdfPages(pages, fileName);
       }
     } catch {
       setMessage(errors.pdf);
@@ -209,48 +199,16 @@ export function PdfPreviewPage() {
     }
   }
 
-  async function downloadPdf(variant?: 'pdf1' | 'pdf2') {
+  async function downloadPdf() {
     setMessage('');
     setCreating(true);
     try {
-      await downloadPdfPages(getPreviewPages(variant), variant ? `${currentReport.title || 'report'}-${variant}.pdf` : fileName);
+      await downloadPdfPages(getPreviewPages(), fileName);
     } catch {
       setMessage(errors.pdf);
     } finally {
       setCreating(false);
     }
-  }
-
-  function renderPdfActions() {
-    return (
-      <>
-        <PrimaryButton icon={<Edit3 size={18} />} variant="secondary" onClick={() => navigate(`/report-form/${currentReport.reportId}/edit`)}>
-          入力画面に戻る
-        </PrimaryButton>
-        {hasPdfVariants ? (
-          <>
-            <PrimaryButton icon={<Download size={18} />} onClick={() => downloadPdf('pdf1')} disabled={creating}>
-              PDF1ダウンロード
-            </PrimaryButton>
-            <PrimaryButton icon={<Download size={18} />} onClick={() => downloadPdf('pdf2')} disabled={creating}>
-              PDF2ダウンロード
-            </PrimaryButton>
-            <PrimaryButton icon={<Share2 size={18} />} variant="secondary" onClick={() => sharePdf('pdf2')} disabled={creating}>
-              PDF2共有
-            </PrimaryButton>
-          </>
-        ) : (
-          <>
-            <PrimaryButton icon={<Download size={18} />} onClick={() => downloadPdf()} disabled={creating}>
-              PDFダウンロード
-            </PrimaryButton>
-            <PrimaryButton icon={<Share2 size={18} />} variant="secondary" onClick={() => sharePdf()} disabled={creating}>
-              共有
-            </PrimaryButton>
-          </>
-        )}
-      </>
-    );
   }
 
   return (
@@ -261,163 +219,100 @@ export function PdfPreviewPage() {
       </header>
       {message ? <p className="alert">{message}</p> : null}
       {creating ? <p className="hint">PDFを作成しています。</p> : null}
-      <div className="action-bar pdf-top-action-bar">
-        {renderPdfActions()}
-      </div>
       <section className="pdf-preview" ref={previewRef}>
-        {hasPdfVariants && constructionNoPhoto ? (
-          <>
-            <div className="pdf-variant-label">PDF1</div>
-            {renderPdfPage(<div className={`pdf-page pdf-management-page reference-management-page ${summaryCompactClassName}`.trim()} data-pdf-variant="pdf1">
-              <div className="management-fixed-area">
-                <div className="management-legal-note">「ビル管理法」・「食品衛生法」・「労働安全衛生法」に定められる備付帳簿用</div>
-                <div className="management-title-row">
-                  <div className="management-title-main">
-                    <h2>防除作業管理報告書</h2>
-                  </div>
-                  <div className="management-right-head">
-                    <div className="management-copy-type">{copyTypeLabel(constructionNoPhoto.copyType)}</div>
-                    <div className="management-report-date">{formatDate(constructionNoPhoto.reportCreatedDate)}</div>
-                    <div className="company-seal-box" aria-label="会社印欄" />
-                  </div>
+        {isConstructionNoPhotoTemplate && constructionNoPhoto ? (
+          renderPdfPage(<div className={`pdf-page pdf-management-page reference-management-page ${summaryCompactClassName}`.trim()}>
+            <div className="management-fixed-area">
+              <div className="management-legal-note">「ビル管理法」・「食品衛生法」・「労働安全衛生法」に定められる備付帳簿用</div>
+              <div className="management-title-row">
+                <div className="management-title-main">
+                  <h2>防除作業管理報告書</h2>
                 </div>
-                <div className="management-head-grid">
-                  <div className="management-left-head">
-                    <div className="management-addressee">
-                      <strong>{constructionNoPhoto.addressee || ' '}</strong>
-                      <span>{honorificLabel(constructionNoPhoto.honorific)}</span>
-                    </div>
-                    <table className="management-responsible-table">
-                      <tbody>
-                        <tr>
-                          <th>管理責任者</th>
-                          <td>{constructionNoPhoto.managementResponsibleName}</td>
-                        </tr>
-                        <tr>
-                          <th>作業責任者</th>
-                          <td>{constructionNoPhoto.workResponsibleName}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                <div className="management-right-head">
+                  <div className="management-copy-type">{copyTypeLabel(constructionNoPhoto.copyType)}</div>
+                  <div className="management-report-date">{formatDate(constructionNoPhoto.reportCreatedDate)}</div>
+                  <div className="company-seal-box" aria-label="会社印欄" />
                 </div>
-                <p className="management-intro">毎度お取引に預り有難うございます。下記の通り作業完了いたしましたので結果と共に報告致します。</p>
-                <table className="management-meta-table">
-                  <tbody>
-                    <tr>
-                      <th>施工日時</th>
-                      <td>{formatDate(constructionNoPhoto.reportCreatedDate)}</td>
-                      <th>作業時間</th>
-                      <td>{constructionNoPhoto.workStartTime} から {constructionNoPhoto.workEndTime}</td>
-                    </tr>
-                    <tr>
-                      <th>施工場所</th>
-                      <td colSpan={3}>{reportLocation}</td>
-                    </tr>
-                  </tbody>
-                </table>
               </div>
-              <h3 className="management-section-title">施工内容</h3>
-              <table className="management-table management-treatment-table">
-                <thead>
-                  <tr>
-                    <th>対象害虫獣</th>
-                    <th>使用薬剤</th>
-                    <th>処理方法</th>
-                    <th>薬剤使用量</th>
-                    <th>備考</th>
-                  </tr>
-                </thead>
+              <div className="management-head-grid">
+                <div className="management-left-head">
+                  <div className="management-addressee">
+                    <strong>{constructionNoPhoto.addressee || ' '}</strong>
+                    <span>{honorificLabel(constructionNoPhoto.honorific)}</span>
+                  </div>
+                  <table className="management-responsible-table">
+                    <tbody>
+                      <tr>
+                        <th>管理責任者</th>
+                        <td>{constructionNoPhoto.managementResponsibleName}</td>
+                      </tr>
+                      <tr>
+                        <th>作業責任者</th>
+                        <td>{constructionNoPhoto.workResponsibleName}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <p className="management-intro">毎度お取引に預り有難うございます。下記の通り作業完了いたしましたので結果と共に報告致します。</p>
+              <table className="management-meta-table">
                 <tbody>
-                  {treatmentRows.map((row) => (
-                    <tr key={row.rowId}>
-                      <td>{row.pestName}</td>
-                      <td>{row.chemicalName}</td>
-                      <td>{row.treatmentMethodName}</td>
-                      <td>{row.chemicalAmount}</td>
-                      <td>{row.notes || ' '}</td>
-                    </tr>
+                  <tr>
+                    <th>施工日時</th>
+                    <td>{formatDate(constructionNoPhoto.reportCreatedDate)}</td>
+                    <th>作業時間</th>
+                    <td>{constructionNoPhoto.workStartTime} から {constructionNoPhoto.workEndTime}</td>
+                  </tr>
+                  <tr>
+                    <th>施工場所</th>
+                    <td colSpan={3}>{reportLocation}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <h3 className="management-section-title">施工内容</h3>
+            <table className="management-table management-treatment-table">
+              <thead>
+                <tr>
+                  <th>対象害虫獣</th>
+                  <th>使用薬剤</th>
+                  <th>処理方法</th>
+                  <th>薬剤使用量</th>
+                  <th>備考</th>
+                </tr>
+              </thead>
+              <tbody>
+                {treatmentRows.map((row) => (
+                  <tr key={row.rowId}>
+                    <td>{row.pestName}</td>
+                    <td>{row.chemicalName}</td>
+                    <td>{row.treatmentMethodName}</td>
+                    <td>{row.chemicalAmount}</td>
+                    <td>{row.notes || ' '}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <section className="management-summary">
+              <h3>作業内容摘要</h3>
+              <p className="pre-line">{constructionNoPhoto.workSummary || currentReport.content}</p>
+            </section>
+            <h3 className="management-section-title">生息状況</h3>
+            <table className="management-activity-table">
+              <tbody>
+                <tr>
+                  {activityCells.map((row, index) => (
+                    <th key={`activity-pest-${index}`}>{row.pestName || ' '}</th>
                   ))}
-                </tbody>
-              </table>
-              <section className="management-summary">
-                <h3>作業内容摘要</h3>
-                <p className="pre-line">{constructionNoPhoto.workSummary || currentReport.content}</p>
-              </section>
-              <h3 className="management-section-title">生息状況</h3>
-              <table className="management-activity-table">
-                <tbody>
-                  <tr>
-                    {activityCells.map((row, index) => (
-                      <th key={`activity-pest-${index}`}>{row.pestName || ' '}</th>
-                    ))}
-                  </tr>
-                  <tr>
-                    {activityCells.map((row, index) => (
-                      <td key={`activity-level-${index}`}>{row.level || ' '}</td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            </div>)}
-            <div className="pdf-variant-label">PDF2</div>
-            {renderPdfPage(<div className="pdf-page excel-report-page" data-pdf-variant="pdf2">
-              <div className="excel-grid">
-                <div className="excel-cell excel-note">「ビル管理法」・「食品衛生法」・「労働安全衛生法」に定める備付帳簿用</div>
-                <div className="excel-cell excel-title">防 除 作 業 完 了 報 告 書</div>
-                <div className="excel-cell excel-copy">{copyTypeLabel(constructionNoPhoto.copyType)}</div>
-                <div className="excel-cell excel-addressee">{constructionNoPhoto.addressee || ' '}</div>
-                <div className="excel-cell excel-honorific">{honorificLabel(constructionNoPhoto.honorific)}</div>
-                <div className="excel-cell excel-label excel-manager-label">管理責任者</div>
-                <div className="excel-cell excel-value excel-manager-value">{constructionNoPhoto.managementResponsibleName}</div>
-                <div className="excel-cell excel-label excel-worker-label">作業責任者</div>
-                <div className="excel-cell excel-value excel-worker-value">{constructionNoPhoto.workResponsibleName}</div>
-                <div className="excel-cell excel-label excel-staff-label">作業員</div>
-                <div className="excel-cell excel-value excel-staff-value">{constructionNoPhoto.workResponsibleName}</div>
-                <div className="excel-cell excel-intro">毎度お引立に預り有難うございます。下記の通り作業完了いたしましたので結果と共に報告いたします。</div>
-                <div className="excel-cell excel-label excel-date-label">施　工　日　時</div>
-                <div className="excel-cell excel-value excel-date-value">{formatDate(constructionNoPhoto.reportCreatedDate)}</div>
-                <div className="excel-cell excel-label excel-time-label">作業時間</div>
-                <div className="excel-cell excel-value excel-time-value">{constructionNoPhoto.workStartTime}</div>
-                <div className="excel-cell excel-wave">～</div>
-                <div className="excel-cell excel-value excel-time-end">{constructionNoPhoto.workEndTime}</div>
-                <div className="excel-cell excel-label excel-place-label">施　工　場　所</div>
-                <div className="excel-cell excel-value excel-place-value">{reportLocation}</div>
-                <div className="excel-cell excel-section excel-treatment-title">施　　工　　内　　容</div>
-                <div className="excel-cell excel-head excel-pest-head">対 象 害 虫</div>
-                <div className="excel-cell excel-head excel-chemical-head">使 用 薬 剤</div>
-                <div className="excel-cell excel-head excel-method-head">処 理 方 法</div>
-                <div className="excel-cell excel-head excel-amount-head">薬 剤 使 用 量</div>
-                <div className="excel-cell excel-head excel-notes-head">備      考</div>
-                {excelTreatmentRows.map((row, index) => (
-                  <div className="excel-treatment-row" key={row.rowId}>
-                    <div className="excel-cell excel-value excel-row-pest" style={{ gridRow: `${19 + index} / ${20 + index}` }}>{row.pestName || ' '}</div>
-                    <div className="excel-cell excel-value excel-row-chemical" style={{ gridRow: `${19 + index} / ${20 + index}` }}>{row.chemicalName || ' '}</div>
-                    <div className="excel-cell excel-value excel-row-method" style={{ gridRow: `${19 + index} / ${20 + index}` }}>{row.treatmentMethodName || ' '}</div>
-                    <div className="excel-cell excel-value excel-row-amount" style={{ gridRow: `${19 + index} / ${20 + index}` }}>{row.chemicalAmount || ' '}</div>
-                    <div className="excel-cell excel-value excel-row-notes" style={{ gridRow: `${19 + index} / ${20 + index}` }}>{row.notes || ' '}</div>
-                  </div>
-                ))}
-                <div className="excel-cell excel-summary">
-                  <p className="pre-line">{constructionNoPhoto.workSummary || currentReport.content}</p>
-                </div>
-                <div className="excel-cell excel-section excel-activity-title">生　　息　　状　　況</div>
-                {activityCells.map((row, index) => (
-                  <div className="excel-cell excel-head excel-activity-pest" style={{ gridColumn: `${2 + index * 10} / ${12 + index * 10}` }} key={`excel-activity-pest-${index}`}>
-                    {row.pestName || ' '}
-                  </div>
-                ))}
-                {activityCells.map((row, index) => (
-                  <div className="excel-cell excel-value excel-activity-level" style={{ gridColumn: `${2 + index * 10} / ${12 + index * 10}` }} key={`excel-activity-level-${index}`}>
-                    {row.level || ' '}
-                  </div>
-                ))}
-                <div className="excel-footer-text">上記の通り実施いたしました。</div>
-                <div className="excel-cell excel-head excel-effect-label">効果判定</div>
-                <div className="excel-cell excel-value excel-effect-value">-　・　+　・　++　・　+++</div>
-              </div>
-            </div>)}
-          </>
+                </tr>
+                <tr>
+                  {activityCells.map((row, index) => (
+                    <td key={`activity-level-${index}`}>{row.level || ' '}</td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>)
         ) : (
           <>
         {renderPdfPage(<div className="pdf-page pdf-cover-page">
@@ -507,7 +402,15 @@ export function PdfPreviewPage() {
         )}
       </section>
       <div className="action-bar">
-        {renderPdfActions()}
+        <PrimaryButton icon={<Edit3 size={18} />} variant="secondary" onClick={() => navigate(`/report-form/${currentReport.reportId}/edit`)}>
+          入力画面に戻る
+        </PrimaryButton>
+        <PrimaryButton icon={<Download size={18} />} onClick={downloadPdf} disabled={creating}>
+          PDFダウンロード
+        </PrimaryButton>
+        <PrimaryButton icon={<Share2 size={18} />} variant="secondary" onClick={sharePdf} disabled={creating}>
+          共有
+        </PrimaryButton>
       </div>
     </main>
   );
