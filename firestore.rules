@@ -1,0 +1,120 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function currentUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function hasActiveUser() {
+      return signedIn()
+        && currentUser().data.isActive == true
+        && currentUser().data.email == request.auth.token.email;
+    }
+
+    function role() {
+      return currentUser().data.role;
+    }
+
+    function branchId() {
+      return currentUser().data.branchId;
+    }
+
+    function isAdmin() {
+      return hasActiveUser() && role() == 'admin';
+    }
+
+    function isBranchManager() {
+      return hasActiveUser() && role() == 'branch_manager';
+    }
+
+    function isWorker() {
+      return hasActiveUser() && role() == 'worker';
+    }
+
+    function isOwnUser(userId) {
+      return hasActiveUser() && request.auth.uid == userId;
+    }
+
+    function isOwnReport(data) {
+      return hasActiveUser() && data.reporterId == request.auth.uid;
+    }
+
+    function isSameBranchReport(data) {
+      return hasActiveUser() && data.branchId == branchId();
+    }
+
+    function protectedReportFieldsUnchanged() {
+      return request.resource.data.reporterId == resource.data.reporterId
+        && request.resource.data.branchId == resource.data.branchId
+        && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    match /users/{userId} {
+      allow get: if isAdmin() || isOwnUser(userId);
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /branches/{branchId} {
+      allow get, list: if hasActiveUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /reports/{reportId} {
+      allow get: if isAdmin()
+        || (isBranchManager() && isSameBranchReport(resource.data))
+        || isOwnReport(resource.data);
+
+      allow list: if isAdmin()
+        || (isBranchManager() && isSameBranchReport(resource.data))
+        || isOwnReport(resource.data);
+
+      allow create: if isAdmin()
+        || (
+          hasActiveUser()
+          && request.resource.data.reporterId == request.auth.uid
+          && request.resource.data.branchId == branchId()
+        );
+
+      allow update: if isAdmin()
+        || (
+          protectedReportFieldsUnchanged()
+          && (
+            (isBranchManager() && isSameBranchReport(resource.data))
+            || isOwnReport(resource.data)
+          )
+        );
+
+      allow delete: if isAdmin();
+    }
+
+    match /pest_masters/{pestId} {
+      allow get, list: if hasActiveUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /chemical_masters/{chemicalId} {
+      allow get, list: if hasActiveUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /treatment_method_masters/{treatmentMethodId} {
+      allow get, list: if hasActiveUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /ai_corrections/{correctionId} {
+      allow get, list, create: if hasActiveUser();
+      allow update, delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

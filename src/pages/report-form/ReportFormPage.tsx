@@ -14,6 +14,7 @@ import { compressImage } from '../../services/imageService';
 import { authorizeGoogleDrive, hasGoogleDriveAccessToken, hasGoogleDriveConfig } from '../../services/googleDriveService';
 import { storeReportImage } from '../../services/imageStorageService';
 import { getCurrentPosition, reverseGeocode } from '../../services/gpsService';
+import { canEditReport } from '../../services/reportPermissionService';
 import { findBranchManagerByBranchId } from '../../repositories/userRepository';
 import { findChemicalMasters, findPestMasters, findTreatmentMethodMasters } from '../../repositories/treatmentMasterRepository';
 import { useAuthStore } from '../../stores/authStore';
@@ -174,6 +175,7 @@ export function ReportFormPage() {
   const [pestMasters, setPestMasters] = useState<PestMaster[]>([]);
   const [chemicalMasters, setChemicalMasters] = useState<ChemicalMaster[]>([]);
   const [treatmentMethodMasters, setTreatmentMethodMasters] = useState<TreatmentMethodMaster[]>([]);
+  const [managementResponsibleOptions, setManagementResponsibleOptions] = useState<string[]>([]);
   const [constructionNoPhoto, setConstructionNoPhoto] = useState<ConstructionNoPhotoReport>(() =>
     defaultConstructionNoPhotoReport(
       workDate,
@@ -183,10 +185,45 @@ export function ReportFormPage() {
   );
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [canEditExisting, setCanEditExisting] = useState(!isEdit);
+  const [hasCheckedEditPermission, setHasCheckedEditPermission] = useState(!isEdit);
 
   useEffect(() => {
     void refreshReports();
   }, [refreshReports]);
+
+  useEffect(() => {
+    let active = true;
+    if (!isEdit) {
+      setCanEditExisting(true);
+      setHasCheckedEditPermission(true);
+      return () => {
+        active = false;
+      };
+    }
+    if (!existing) {
+      setCanEditExisting(false);
+      setHasCheckedEditPermission(hasReportsLoaded);
+      return () => {
+        active = false;
+      };
+    }
+    setHasCheckedEditPermission(false);
+    canEditReport(user, existing).then((editable) => {
+      if (!active) return;
+      setCanEditExisting(editable);
+      setHasCheckedEditPermission(true);
+    });
+    return () => {
+      active = false;
+    };
+  }, [existing, hasReportsLoaded, isEdit, user]);
+
+  useEffect(() => {
+    const savedName = constructionNoPhoto.managementResponsibleName.trim();
+    if (!isConstructionNoPhotoTemplate || !savedName) return;
+    setManagementResponsibleOptions((current) => Array.from(new Set([...current, savedName])));
+  }, [constructionNoPhoto.managementResponsibleName, isConstructionNoPhotoTemplate]);
 
   useEffect(() => {
     if (!isConstructionNoPhotoTemplate) return;
@@ -232,25 +269,28 @@ export function ReportFormPage() {
   }, [isConstructionNoPhotoTemplate]);
 
   useEffect(() => {
-    if (!isConstructionNoPhotoTemplate || !user?.branchId) return;
+    const branchIdForManager = existing?.branchId ?? user?.branchId;
+    if (!isConstructionNoPhotoTemplate || !branchIdForManager) return;
     let active = true;
-    findBranchManagerByBranchId(user.branchId).then((branchManager) => {
+    findBranchManagerByBranchId(branchIdForManager).then((branchManager) => {
       if (!active || !branchManager) return;
+      setManagementResponsibleOptions((current) => Array.from(new Set([...current, branchManager.name])));
+      if (isEdit || draft?.constructionNoPhoto?.managementResponsibleName) return;
       setConstructionNoPhoto((current) => ({
         ...current,
-        managementResponsibleName: branchManager.name
+        managementResponsibleName: current.managementResponsibleName || branchManager.name
       }));
-    });
+    }).catch(() => undefined);
     return () => {
       active = false;
     };
-  }, [isConstructionNoPhotoTemplate, user?.branchId]);
+  }, [draft?.constructionNoPhoto?.managementResponsibleName, existing?.branchId, isConstructionNoPhotoTemplate, isEdit, user?.branchId]);
 
   if (!reportType || !photoType || !reportTypes.includes(reportType) || !photoTypes.includes(photoType)) {
     return <Navigate to="/report-type" replace />;
   }
 
-  if (isEdit && (isReportLoading || !hasReportsLoaded)) {
+  if (isEdit && (isReportLoading || !hasReportsLoaded || !hasCheckedEditPermission)) {
     return (
       <main className="app-shell">
         <p className="empty-text">読み込み中...</p>
@@ -259,6 +299,7 @@ export function ReportFormPage() {
   }
 
   if (isEdit && !existing) return <Navigate to="/home" replace />;
+  if (isEdit && !canEditExisting) return <Navigate to="/home" replace />;
 
   const currentReportType = reportType as ReportType;
   const currentPhotoType = photoType as PhotoType;
@@ -425,9 +466,9 @@ export function ReportFormPage() {
       coverDriveName: usesImages ? coverDriveName || undefined : undefined,
       latitude,
       longitude,
-      reporterId: user?.userId ?? 'guest',
+      reporterId: existing?.reporterId ?? user?.userId ?? 'guest',
       reporterName: reporterName.trim(),
-      branchId: user?.branchId ?? '',
+      branchId: existing?.branchId ?? user?.branchId ?? '',
       branchName: branchName.trim(),
       content: content.trim(),
       correctedContent: state.correctedText ?? existing?.correctedContent ?? '',
@@ -612,9 +653,15 @@ export function ReportFormPage() {
                 <label>
                   管理責任者
                   <input
+                    list="management-responsible-options"
                     value={constructionNoPhoto.managementResponsibleName}
                     onChange={(event) => updateConstructionNoPhoto({ managementResponsibleName: event.target.value })}
                   />
+                  <datalist id="management-responsible-options">
+                    {managementResponsibleOptions.map((name) => (
+                      <option key={name} value={name} />
+                    ))}
+                  </datalist>
                 </label>
                 <label>
                   作業責任者

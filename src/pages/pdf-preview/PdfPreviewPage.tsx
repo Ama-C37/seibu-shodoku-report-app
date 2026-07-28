@@ -4,6 +4,8 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { DriveImage } from '../../components/DriveImage';
 import { HeaderNavButton } from '../../components/HeaderNavButton';
 import { PrimaryButton } from '../../components/PrimaryButton';
+import { canEditReport } from '../../services/reportPermissionService';
+import { useAuthStore } from '../../stores/authStore';
 import { useReportStore } from '../../stores/reportStore';
 import { downloadPdfPages, getPdfPagesBlob } from '../../services/pdfService';
 import { errors, photoTypeLabel, reportTypeLabel } from '../../utils/constants';
@@ -58,12 +60,14 @@ function getSummaryCompactClassName(textLength: number) {
 export function PdfPreviewPage() {
   const navigate = useNavigate();
   const { reportId } = useParams();
+  const user = useAuthStore((store) => store.user);
   const report = useReportStore((store) => store.reports.find((item) => item.reportId === reportId));
   const isLoading = useReportStore((store) => store.isLoading);
   const hasLoaded = useReportStore((store) => store.hasLoaded);
   const refresh = useReportStore((store) => store.refresh);
   const [message, setMessage] = useState('');
   const [creating, setCreating] = useState(false);
+  const [isEditable, setIsEditable] = useState(false);
   const [previewScale, setPreviewScale] = useState(1);
   const previewRef = useRef<HTMLElement | null>(null);
   const summaryTextLength = (report?.constructionNoPhoto?.workSummary || report?.content || '').trim().length;
@@ -72,6 +76,22 @@ export function PdfPreviewPage() {
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    let active = true;
+    if (!report) {
+      setIsEditable(false);
+      return () => {
+        active = false;
+      };
+    }
+    canEditReport(user, report).then((editable) => {
+      if (active) setIsEditable(editable);
+    });
+    return () => {
+      active = false;
+    };
+  }, [report, user]);
 
   useEffect(() => {
     function updatePreviewScale() {
@@ -402,9 +422,11 @@ export function PdfPreviewPage() {
         )}
       </section>
       <div className="action-bar">
-        <PrimaryButton icon={<Edit3 size={18} />} variant="secondary" onClick={() => navigate(`/report-form/${currentReport.reportId}/edit`)}>
-          入力画面に戻る
-        </PrimaryButton>
+        {isEditable ? (
+          <PrimaryButton icon={<Edit3 size={18} />} variant="secondary" onClick={() => navigate(`/report-form/${currentReport.reportId}/edit`)}>
+            入力画面に戻る
+          </PrimaryButton>
+        ) : null}
         <PrimaryButton icon={<Download size={18} />} onClick={downloadPdf} disabled={creating}>
           PDFダウンロード
         </PrimaryButton>

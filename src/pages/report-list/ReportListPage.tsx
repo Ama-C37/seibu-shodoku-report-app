@@ -4,6 +4,8 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { HeaderNavButton } from '../../components/HeaderNavButton';
 import { ReportCard } from '../../components/ReportCard';
 import type { ReportStatus } from '../../models/report';
+import { canEditReport } from '../../services/reportPermissionService';
+import { useAuthStore } from '../../stores/authStore';
 import { useReportStore } from '../../stores/reportStore';
 import { reportStatusLabel } from '../../utils/constants';
 
@@ -16,6 +18,7 @@ export function ReportListPage() {
   const isLoading = useReportStore((state) => state.isLoading);
   const hasLoaded = useReportStore((state) => state.hasLoaded);
   const refresh = useReportStore((state) => state.refresh);
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     void refresh();
@@ -23,6 +26,15 @@ export function ReportListPage() {
 
   if (!status || !statuses.includes(status)) return <Navigate to="/home" replace />;
   const filtered = reports.filter((report) => report.status === status);
+
+  async function openReport(reportId: string) {
+    const report = reports.find((item) => item.reportId === reportId);
+    if (!report) return;
+    const editable = await canEditReport(user, report);
+    navigate(editable ? `/report-form/${report.reportId}/edit` : `/report-detail/${report.reportId}`, {
+      state: editable ? { resetDraft: true } : undefined
+    });
+  }
 
   return (
     <main className="app-shell">
@@ -40,7 +52,7 @@ export function ReportListPage() {
             <ReportCard
               key={report.reportId}
               report={report}
-              onClick={() => navigate(`/report-form/${report.reportId}/edit`, { state: { resetDraft: true } })}
+              onClick={() => void openReport(report.reportId)}
             />
           ))}
         </div>

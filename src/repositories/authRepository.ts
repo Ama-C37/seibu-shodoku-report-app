@@ -2,7 +2,7 @@ import { signInWithEmailAndPassword, signOut as firebaseSignOut } from 'firebase
 
 import type { AppUser } from '../models/appUser';
 import { getFirebaseServices } from '../services/firebaseService';
-import { findUserByEmail } from './userRepository';
+import { findUser, findUserByEmail } from './userRepository';
 
 const currentUserKey = 'seibu-report-current-user';
 const inactiveUserMessage = 'This user is inactive.';
@@ -49,8 +49,8 @@ export async function signIn(email: string, password: string): Promise<AppUser> 
   }
 
   if (firebase) {
-    await signInWithEmailAndPassword(firebase.auth, normalizedEmail, password);
-    const registeredUser = await findUserByEmail(normalizedEmail);
+    const credential = await signInWithEmailAndPassword(firebase.auth, normalizedEmail, password);
+    const registeredUser = await findUser(credential.user.uid) ?? await findUserByEmail(normalizedEmail);
     if (registeredUser) {
       if (!registeredUser.isActive) {
         await firebaseSignOut(firebase.auth);

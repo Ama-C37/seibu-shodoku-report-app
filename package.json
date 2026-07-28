@@ -8,7 +8,8 @@
     "dev:android": "vite --host 0.0.0.0 --port 5173",
     "tunnel:android": "cloudflared tunnel --protocol http2 --url http://localhost:5173",
     "build": "tsc && vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "verify:permissions:api": "node scripts/verifyApiPermissions.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",

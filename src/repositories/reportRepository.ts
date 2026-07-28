@@ -1,6 +1,7 @@
-import { collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, setDoc, where, type QueryConstraint } from 'firebase/firestore';
 
 import type { Report, ReportStatus } from '../models/report';
+import * as authRepository from './authRepository';
 import { getFirebaseServices } from '../services/firebaseService';
 
 const reportsKey = 'seibu-report-reports';
@@ -65,10 +66,22 @@ function removeUndefinedValues<T>(value: T): T {
   return value;
 }
 
+function currentUserReportConstraints() {
+  const user = authRepository.loadCurrentUser();
+  const constraints: QueryConstraint[] = [];
+  if (!user?.isActive) return null;
+  if (user.role === 'branch_manager') constraints.push(where('branchId', '==', user.branchId));
+  if (user.role === 'worker') constraints.push(where('reporterId', '==', user.userId));
+  return constraints;
+}
+
 export async function findReports() {
   const firebase = getFirebaseServices();
   if (firebase) {
-    const snapshot = await getDocs(collection(firebase.firestore, 'reports'));
+    const constraints = currentUserReportConstraints();
+    if (!constraints) return [];
+    const reportsQuery = query(collection(firebase.firestore, 'reports'), ...constraints);
+    const snapshot = await getDocs(reportsQuery);
     return sortReports(snapshot.docs.map((item) => normalizeReport(item.id, item.data() as Partial<Report>)));
   }
 
@@ -88,7 +101,9 @@ export async function findReport(reportId: string) {
 export async function findReportsByStatus(status: ReportStatus) {
   const firebase = getFirebaseServices();
   if (firebase) {
-    const reportsQuery = query(collection(firebase.firestore, 'reports'), where('status', '==', status));
+    const constraints = currentUserReportConstraints();
+    if (!constraints) return [];
+    const reportsQuery = query(collection(firebase.firestore, 'reports'), where('status', '==', status), ...constraints);
     const snapshot = await getDocs(reportsQuery);
     return sortReports(snapshot.docs.map((item) => normalizeReport(item.id, item.data() as Partial<Report>)));
   }

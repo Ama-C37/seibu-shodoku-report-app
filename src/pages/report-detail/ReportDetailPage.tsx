@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Edit3, FileText } from 'lucide-react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
 import { HeaderNavButton } from '../../components/HeaderNavButton';
 import { PrimaryButton } from '../../components/PrimaryButton';
+import { canEditReport } from '../../services/reportPermissionService';
+import { useAuthStore } from '../../stores/authStore';
 import { useReportStore } from '../../stores/reportStore';
 import { formatDate } from '../../utils/dateFormatter';
 import { photoTypeLabel, reportStatusLabel, reportTypeLabel } from '../../utils/constants';
@@ -11,14 +13,32 @@ import { photoTypeLabel, reportStatusLabel, reportTypeLabel } from '../../utils/
 export function ReportDetailPage() {
   const navigate = useNavigate();
   const { reportId } = useParams();
+  const user = useAuthStore((state) => state.user);
   const report = useReportStore((state) => state.reports.find((item) => item.reportId === reportId));
   const isLoading = useReportStore((state) => state.isLoading);
   const hasLoaded = useReportStore((state) => state.hasLoaded);
   const refresh = useReportStore((state) => state.refresh);
+  const [isEditable, setIsEditable] = useState(false);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    let active = true;
+    if (!report) {
+      setIsEditable(false);
+      return () => {
+        active = false;
+      };
+    }
+    canEditReport(user, report).then((editable) => {
+      if (active) setIsEditable(editable);
+    });
+    return () => {
+      active = false;
+    };
+  }, [report, user]);
 
   if (isLoading || !hasLoaded) {
     return (
@@ -55,9 +75,11 @@ export function ReportDetailPage() {
         <p className="pre-line">{report.content}</p>
       </section>
       <div className="action-bar">
-        <PrimaryButton icon={<Edit3 size={18} />} onClick={() => navigate(`/report-form/${report.reportId}/edit`)}>
-          編集
-        </PrimaryButton>
+        {isEditable ? (
+          <PrimaryButton icon={<Edit3 size={18} />} onClick={() => navigate(`/report-form/${report.reportId}/edit`)}>
+            編集
+          </PrimaryButton>
+        ) : null}
         <PrimaryButton icon={<FileText size={18} />} variant="secondary" onClick={() => navigate(`/pdf-preview/${report.reportId}`)}>
           PDF表示
         </PrimaryButton>
